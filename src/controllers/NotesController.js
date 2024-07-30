@@ -1,31 +1,20 @@
 const knex = require("../database/knex");
+const AppError = require('../utils/AppError');
 
 class NotesController {
   async create(request, response) {
-    const { title, description, tags, links } = request.body;
+    const { title, description, rating, tags } = request.body;
     const { user_id } = request.params;
-    const [note_id] = await knex("notes").insert({
-      title,
-      description,
-      user_id
-    });
 
-    const linksInsert = links.map(link => {
-      return {
-        note_id,
-        url: link
-      }
-    });
+    const checkRating = (rating > 0 && rating <= 5);
 
-    await knex("links").insert(linksInsert);
+    if (rating && !checkRating){
+      throw new AppError("O valor da avaliação deverá variar entre 1 e 5");
+    }
 
-    const tagsInsert = tags.map(name => {
-      return {
-        note_id,
-        name,
-        user_id
-      }
-    });
+    const [note_id] = await knex("notes").insert({ title, description, rating, user_id});
+
+    const tagsInsert = tags.map(name => {return {note_id, name, user_id} });
 
     await knex("tags").insert(tagsInsert);
 
@@ -37,12 +26,10 @@ class NotesController {
 
     const note = await knex("notes").where({ id }).first();
     const tags = await knex("tags").where({ note_id: id }).orderBy("name");
-    const links = await knex("links").where({ note_id: id }).orderBy("created_at");
 
     return response.json({
       ...note,
-      tags,
-      links
+      tags
     });
   }
 

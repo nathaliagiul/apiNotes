@@ -1,11 +1,11 @@
 const { Router } = require('express');
 
-const usersRouter = require('./users.router');
+const usersRoutes = require('./users.routes');
 const notesRoutes = require('./notes.routes');
 const tagsRoutes = require('./tags.routes');
 
 const routes = Router();
-routes.use('/users', usersRouter);
+routes.use('/users', usersRoutes);
 routes.use('/notes', notesRoutes);
 routes.use('/tags', tagsRoutes);
 
